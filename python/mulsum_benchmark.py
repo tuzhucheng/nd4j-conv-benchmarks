@@ -5,11 +5,10 @@ import numpy as np
 
 class MulSumBenchmark(object):
 
-    def __init__(self, repeat, size):
+    def __init__(self, repeat, height, width):
         self.repeat = repeat
-        self.size = size
-        self.matrices_a = [np.random.randn(size, size) for _ in range(repeat)]
-        self.matrices_b = [np.random.randn(size, size) for _ in range(repeat)]
+        self.matrices_a = [np.random.randn(height, width) for _ in range(repeat)]
+        self.matrices_b = [np.random.randn(height, width) for _ in range(repeat)]
         self.results = []
 
     def run(self):

@@ -13,8 +13,8 @@ if __name__ == '__main__':
         exit(0)
 
     if argv[1] == 'mulsum-test':
-        if len(argv) != 4:
-            print('Usage: mulsum-test [repeat] [size]')
+        if len(argv) != 5:
+            print('Usage: mulsum-test [repeat] [height] [width]')
             exit(0)
-        benchmark = MulSumBenchmark(int(argv[2]), int(argv[3]))
+        benchmark = MulSumBenchmark(int(argv[2]), int(argv[3]), int(argv[4]))
         benchmark.run()

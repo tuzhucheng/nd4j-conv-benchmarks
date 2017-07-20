@@ -9,20 +9,18 @@ import java.util.concurrent.TimeUnit;
 public class MulSumBenchmark {
 
     private int repeat;
-    private int size;
     private ArrayList<INDArray> matricesA;
     private ArrayList<INDArray> matricesB;
     private ArrayList<Double> results;
 
-    public MulSumBenchmark(int repeat, int size) {
+    public MulSumBenchmark(int repeat, int height, int width) {
         this.repeat = repeat;
-        this.size = size;
         matricesA = new ArrayList<>(repeat);
         matricesB = new ArrayList<>(repeat);
         for (int i = 0; i < repeat; i++) {
             // Gaussian distribution, mean 0, std. dev. 1
-            INDArray a = Nd4j.randn(size, size);
-            INDArray b = Nd4j.randn(size, size);
+            INDArray a = Nd4j.randn(height, width);
+            INDArray b = Nd4j.randn(height, width);
             matricesA.add(a);
             matricesB.add(b);
         }

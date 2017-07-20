@@ -17,12 +17,12 @@ public class App
         }
 
         if (args[0].equals("mulsum-test")) {
-            if (args.length != 3) {
-                System.out.println("Usage: mulsum-test [repeat] [size]");
-                System.out.println("Example: mulsum-test 20000 100");
+            if (args.length != 4) {
+                System.out.println("Usage: mulsum-test [repeat] [height] [width");
+                System.out.println("Example: mulsum-test 20000 50 5");
                 System.exit(0);
             }
-            MulSumBenchmark benchmark = new MulSumBenchmark(Integer.valueOf(args[1]), Integer.valueOf(args[2]));
+            MulSumBenchmark benchmark = new MulSumBenchmark(Integer.valueOf(args[1]), Integer.valueOf(args[2]), Integer.valueOf(args[3]));
             benchmark.run();
         } else if (args[0].equals("run-nn-test")) {
             if (args.length != 9) {

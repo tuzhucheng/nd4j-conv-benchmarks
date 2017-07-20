@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 public class NNBenchmark {
     private int repeat;
+    private int mulSumOps;
     private ArrayList<INDArray> matricesA;
     private ArrayList<INDArray> matricesB;
     private ArrayList<INDArray> extFeats;
@@ -16,6 +17,7 @@ public class NNBenchmark {
 
     public NNBenchmark(int repeat, int numFilters, int embeddingH, int embeddingW, int filterW, int padding, int numExtFeats, int numHiddenLayerUnits) {
         this.repeat = repeat;
+        mulSumOps = 2 * repeat * (embeddingW + 2*padding - filterW + 1);
 
         matricesA = new ArrayList<>(repeat);
         matricesB = new ArrayList<>(repeat);
@@ -46,8 +48,10 @@ public class NNBenchmark {
         long end = System.nanoTime();
         long totalElapsedSeconds = TimeUnit.NANOSECONDS.toSeconds(end - start);
         System.out.println("Elapsed time (s): " + totalElapsedSeconds);
-        System.out.println("Operations: " + count);
-        System.out.println("Operations / second: " + count * 1.0 / totalElapsedSeconds);
+        System.out.println("Sentence Pairs Processed: " + count);
+        System.out.println("Sentence Pairs Processed / second: " + count * 1.0 / totalElapsedSeconds);
+        System.out.println("MulSum Operations: " + mulSumOps);
+        System.out.println("MulSum Operations / second: " + mulSumOps * 1.0 / totalElapsedSeconds);
         return results;
     }
 }
