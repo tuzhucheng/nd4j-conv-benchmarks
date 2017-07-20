@@ -1,5 +1,6 @@
 *.DS_STORE
 *.pyc
+python/venv
 *.class
 java/target/
 *.swp
