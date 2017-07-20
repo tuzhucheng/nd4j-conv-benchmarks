@@ -1,0 +1,7 @@
+*.DS_STORE
+*.pyc
+*.class
+java/target/
+*.swp
+*.idea/
+*.iml
