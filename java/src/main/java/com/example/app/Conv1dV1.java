@@ -12,6 +12,7 @@ public class Conv1dV1 {
     private int kernelSize;
     private int stride;
     private int padding;
+    private INDArray temp;
 
     public Conv1dV1(int inChannels, int outChannels, int kernelSize, int stride, int padding) {
         this.inChannels = inChannels;
@@ -32,14 +33,16 @@ public class Conv1dV1 {
             input = paddedArray;
         }
 
+        if (temp == null) {
+            temp = Nd4j.createUninitialized(filter.size(0), kernelSize);
+        }
         int outputDim = input.shape()[1] - kernelSize + 1;
         INDArray result = Nd4j.zeros(outputDim);
 
         for (int i = 0; i < outputDim; i++) {
             INDArrayIndex interval = NDArrayIndex.interval(i, i + kernelSize);
             INDArray intervalElements = input.get(NDArrayIndex.all(), interval);
-            INDArray elementWiseProduct = intervalElements.mul(filter);
-            double sum = elementWiseProduct.sumNumber().doubleValue();
+            double sum = intervalElements.mul(filter, temp).sumNumber().doubleValue();
             result.putScalar(i, sum);
         }
 

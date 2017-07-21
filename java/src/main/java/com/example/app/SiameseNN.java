@@ -10,7 +10,6 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 public class SiameseNN {
 
     private int numFilters;
-    private int padding;
     private int hiddenLayerInputUnits;
     private INDArray s1ConvFilters;
     private INDArray s1ConvFilterBiases;
@@ -20,9 +19,13 @@ public class SiameseNN {
     private INDArray hiddenLayerBiases;
     private INDArray softmaxLayerWeights;
     private INDArray softmaxLayerBiases;
+    private int kernelWidth;
+    private int padding;
+    private Conv1dV1 conv;
 
     public SiameseNN(int numFilters, int filterH, int filterW, int padding, int numExtFeats, int hiddenLayerUnits) {
         this.numFilters = numFilters;
+        this.kernelWidth = filterW;
         this.padding = padding;
         hiddenLayerInputUnits = 2*numFilters + numExtFeats;
 
@@ -35,15 +38,14 @@ public class SiameseNN {
         hiddenLayerBiases = Nd4j.randn(1, hiddenLayerUnits);
         softmaxLayerWeights = Nd4j.randn(hiddenLayerUnits, 2);
         softmaxLayerBiases = Nd4j.randn(1, 2);
+
+        conv = new Conv1dV1(1, 1, kernelWidth, 1, 4);
     }
 
     // For benchmarking purposes - we don't need getters and setters for weights of this network
 
     private INDArray getConvFeatureMaps(INDArray input, INDArray filters, INDArray biases) {
-        int kernelWidth = 5;
-        int padding = 4;
         INDArray questionConvFeatureMaps = Nd4j.zeros(numFilters, input.columns() + 2*padding - kernelWidth + 1);
-        Conv1dV1 conv = new Conv1dV1(1, 1, kernelWidth, 1, 4);
         for (int i = 0; i < filters.size(0); i++) {
             INDArray filter = filters.get(NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all());
             INDArray convOutput = conv.forward(input, filter);
