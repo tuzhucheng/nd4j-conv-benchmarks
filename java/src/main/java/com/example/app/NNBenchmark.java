@@ -31,7 +31,7 @@ public class NNBenchmark {
             matricesB.add(b);
             extFeats.add(ext);
         }
-        nnModel = new SiameseNN(numFilters, embeddingH, filterW, padding, numExtFeats, numHiddenLayerUnits);
+        nnModel = new SiameseNN(numFilters, embeddingH, filterW, embeddingW, padding, numExtFeats, numHiddenLayerUnits);
         results = new ArrayList<>();
     }
 

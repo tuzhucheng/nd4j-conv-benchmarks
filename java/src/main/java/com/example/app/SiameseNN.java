@@ -19,14 +19,11 @@ public class SiameseNN {
     private INDArray hiddenLayerBiases;
     private INDArray softmaxLayerWeights;
     private INDArray softmaxLayerBiases;
-    private int kernelWidth;
-    private int padding;
-    private Conv1dV1 conv;
+    private Conv1d questionConv;
+    private Conv1d answerConv;
 
-    public SiameseNN(int numFilters, int filterH, int filterW, int padding, int numExtFeats, int hiddenLayerUnits) {
+    public SiameseNN(int numFilters, int filterH, int filterW, int embeddingW, int padding, int numExtFeats, int hiddenLayerUnits) {
         this.numFilters = numFilters;
-        this.kernelWidth = filterW;
-        this.padding = padding;
         hiddenLayerInputUnits = 2*numFilters + numExtFeats;
 
         int[] filterDims = {numFilters, filterH, filterW};
@@ -39,28 +36,14 @@ public class SiameseNN {
         softmaxLayerWeights = Nd4j.randn(hiddenLayerUnits, 2);
         softmaxLayerBiases = Nd4j.randn(1, 2);
 
-        conv = new Conv1dV1(1, 1, kernelWidth, 1, 4);
-    }
-
-    // For benchmarking purposes - we don't need getters and setters for weights of this network
-
-    private INDArray getConvFeatureMaps(INDArray input, INDArray filters, INDArray biases) {
-        INDArray questionConvFeatureMaps = Nd4j.zeros(numFilters, input.columns() + 2*padding - kernelWidth + 1);
-        for (int i = 0; i < filters.size(0); i++) {
-            INDArray filter = filters.get(NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all());
-            INDArray convOutput = conv.forward(input, filter);
-            convOutput.addi(biases.get(NDArrayIndex.point(i)));
-            INDArrayIndex featMapIndex[] = { NDArrayIndex.point(i), NDArrayIndex.all() };
-            questionConvFeatureMaps.put(featMapIndex, convOutput);
-        }
-        Nd4j.getExecutioner().exec(new Tanh(questionConvFeatureMaps));
-        return questionConvFeatureMaps;
+        questionConv = new Conv1dV2(filterH, numFilters, filterW, embeddingW, 1, padding, s1ConvFilters, s1ConvFilterBiases);
+        answerConv = new Conv1dV2(filterH, numFilters, filterW, embeddingW, 1, padding, s2ConvFilters, s2ConvFilterBiases);
     }
 
     public INDArray forward(INDArray s1, INDArray s2, INDArray externalFeatures) {
         // Convolution
-        INDArray questionConvFeatureMaps = getConvFeatureMaps(s1, s1ConvFilters, s1ConvFilterBiases);
-        INDArray answerConvFeatureMaps = getConvFeatureMaps(s2, s2ConvFilters, s2ConvFilterBiases);
+        INDArray questionConvFeatureMaps = questionConv.forward(s1);
+        INDArray answerConvFeatureMaps = answerConv.forward(s2);
 
         // Pooling
         INDArray questionPooled = Nd4j.max(questionConvFeatureMaps, 1);

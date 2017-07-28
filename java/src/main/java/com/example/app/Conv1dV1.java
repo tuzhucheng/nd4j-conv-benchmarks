@@ -1,30 +1,39 @@
 package com.example.app;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.transforms.Tanh;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
-public class Conv1dV1 {
+public class Conv1dV1 extends Conv1d {
 
     private int inChannels;
     private int outChannels;
     private int kernelSize;
     private int stride;
     private int padding;
+    private INDArray filters;
+    private INDArray biases;
     private INDArray temp;
 
-    public Conv1dV1(int inChannels, int outChannels, int kernelSize, int stride, int padding) {
+    public Conv1dV1(int inChannels, int outChannels, int kernelSize, int embeddingW, int stride, int padding, INDArray filters, INDArray biases) {
+        super(inChannels, outChannels, kernelSize, stride, padding, filters, biases);
         this.inChannels = inChannels;
         this.outChannels = outChannels;
         this.kernelSize = kernelSize;
         this.stride = stride;
+        this.filters = filters;
+        this.biases = biases;
         this.padding = padding;
+        this.temp = Nd4j.createUninitialized(filters.size(1), kernelSize);
     }
 
-    public INDArray forward(INDArray input, INDArray filter) {
+    public INDArray forward(INDArray input) {
         // TODO Sanity checking the input
         // TODO add support for non-one stride
+
+        INDArray featureMaps = Nd4j.zeros(outChannels, input.columns() + 2*padding - kernelSize + 1);
 
         if (padding > 0) {
             INDArray paddedArray = Nd4j.zeros(input.rows(), input.columns() + 2*padding);
@@ -33,20 +42,29 @@ public class Conv1dV1 {
             input = paddedArray;
         }
 
-        if (temp == null) {
-            temp = Nd4j.createUninitialized(filter.size(0), kernelSize);
-        }
-        int outputDim = input.shape()[1] - kernelSize + 1;
-        INDArray result = Nd4j.zeros(outputDim);
+        for (int i = 0; i < outChannels; i++) {
+            INDArray filter = filters.get(NDArrayIndex.point(i), NDArrayIndex.all(), NDArrayIndex.all());
 
-        for (int i = 0; i < outputDim; i++) {
-            INDArrayIndex interval = NDArrayIndex.interval(i, i + kernelSize);
-            INDArray intervalElements = input.get(NDArrayIndex.all(), interval);
-            double sum = intervalElements.mul(filter, temp).sumNumber().doubleValue();
-            result.putScalar(i, sum);
+            int outputDim = input.shape()[1] - kernelSize + 1;
+            INDArray convOutput = Nd4j.createUninitialized(outputDim);
+
+            // loop over each position
+            for (int j = 0; j < outputDim; j++) {
+                INDArrayIndex interval = NDArrayIndex.interval(j, j + kernelSize);
+                INDArray intervalElements = input.get(NDArrayIndex.all(), interval);
+                double sum = intervalElements.mul(filter, temp).sumNumber().doubleValue();
+                convOutput.putScalar(j, sum);
+            }
+
+            // put result for each filter
+            convOutput.addi(biases.get(NDArrayIndex.point(i)));
+            INDArrayIndex featMapIndex[] = { NDArrayIndex.point(i), NDArrayIndex.all() };
+            featureMaps.put(featMapIndex, convOutput);
         }
 
-        return result;
+        Nd4j.getExecutioner().exec(new Tanh(featureMaps));
+
+        return featureMaps;
     }
 
 }

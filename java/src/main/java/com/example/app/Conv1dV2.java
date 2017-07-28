@@ -13,7 +13,7 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Conv1dV2 {
+public class Conv1dV2 extends Conv1d {
 
     private int inChannels;
     private int outChannels;
@@ -22,7 +22,8 @@ public class Conv1dV2 {
     private int padding;
     private MultiLayerNetwork model;
 
-    public Conv1dV2(int inChannels, int outChannels, int kernelSize, int stride, int padding, INDArray filters, INDArray biases) {
+    public Conv1dV2(int inChannels, int outChannels, int kernelSize, int embeddingW, int stride, int padding, INDArray filters, INDArray biases) {
+        super(inChannels, outChannels, kernelSize, stride, padding, filters, biases);
         this.inChannels = inChannels;
         this.outChannels = outChannels;
         this.kernelSize = kernelSize;
@@ -31,9 +32,9 @@ public class Conv1dV2 {
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(50, this.kernelSize)
-                        .nIn(this.inChannels)
-                        .stride(this.stride, this.stride)
+                .layer(0, new ConvolutionLayer.Builder(inChannels, kernelSize)
+                        .nIn(1)
+                        .stride(stride, stride)
                         .nOut(outChannels)
                         .padding(0, this.padding)
                         .activation(Activation.TANH)
@@ -42,24 +43,26 @@ public class Conv1dV2 {
 
         model = new MultiLayerNetwork(conf);
 
-        INDArray initialLayer = Nd4j.ones(1, 1, 50, 20);
+        INDArray initialLayer = Nd4j.ones(1, 1, inChannels, embeddingW);
         model.initializeLayers(initialLayer);
-        List<INDArray> params = new ArrayList<>();
-        params.add(biases);
-        params.add(filters);
-        model.setParams(Nd4j.toFlattened('f', params));
+
+//        For performance tests using various dimensions, do not set params
+//        List<INDArray> params = new ArrayList<>();
+//        params.add(biases);
+//        params.add(filters);
+//        model.setParams(Nd4j.toFlattened('f', params));
     }
 
     public INDArray forward(INDArray input) {
         model.initializeLayers(input);
         int[] shape = {1, 1, input.size(0), input.size(1)};
-        INDArray i = Nd4j.createUninitialized(shape);
+        INDArray reshapedInput = Nd4j.createUninitialized(shape);
         for (int j = 0; j < input.size(0); j++) {
             INDArrayIndex[] index = {NDArrayIndex.point(0), NDArrayIndex.point(0), NDArrayIndex.point(j), NDArrayIndex.all()};
             INDArrayIndex[] inputIndex = {NDArrayIndex.point(j), NDArrayIndex.all()};
-            i.put(index, input.get(inputIndex));
+            reshapedInput.put(index, input.get(inputIndex));
         }
-        INDArray output = model.output(i, false);
+        INDArray output = model.output(reshapedInput, false);
         output = output.reshape(output.size(1), output.size(3));
         return output;
     }
