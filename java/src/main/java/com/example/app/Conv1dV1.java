@@ -6,12 +6,15 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
+@Deprecated
 public class Conv1dV1 extends Conv1d {
 
-    private int inChannels;
+    /**
+     * Old slow implementation of Conv1d that should not be used.
+     */
+
     private int outChannels;
     private int kernelSize;
-    private int stride;
     private int padding;
     private INDArray filters;
     private INDArray biases;
@@ -19,10 +22,8 @@ public class Conv1dV1 extends Conv1d {
 
     public Conv1dV1(int inChannels, int outChannels, int kernelSize, int embeddingW, int stride, int padding, INDArray filters, INDArray biases) {
         super(inChannels, outChannels, kernelSize, stride, padding, filters, biases);
-        this.inChannels = inChannels;
         this.outChannels = outChannels;
         this.kernelSize = kernelSize;
-        this.stride = stride;
         this.filters = filters;
         this.biases = biases;
         this.padding = padding;

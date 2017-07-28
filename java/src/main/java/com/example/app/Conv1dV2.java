@@ -10,24 +10,15 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Conv1dV2 extends Conv1d {
 
     private int inChannels;
-    private int outChannels;
-    private int kernelSize;
-    private int stride;
     private int padding;
     private MultiLayerNetwork model;
 
     public Conv1dV2(int inChannels, int outChannels, int kernelSize, int embeddingW, int stride, int padding, INDArray filters, INDArray biases) {
         super(inChannels, outChannels, kernelSize, stride, padding, filters, biases);
         this.inChannels = inChannels;
-        this.outChannels = outChannels;
-        this.kernelSize = kernelSize;
-        this.stride = stride;
         this.padding = padding;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()

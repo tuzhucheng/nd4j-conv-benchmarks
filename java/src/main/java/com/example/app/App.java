@@ -18,7 +18,7 @@ public class App
 
         if (args[0].equals("mulsum-test")) {
             if (args.length != 4) {
-                System.out.println("Usage: mulsum-test [repeat] [height] [width");
+                System.out.println("Usage: mulsum-test [repeat] [height] [width]");
                 System.out.println("Example: mulsum-test 20000 50 5");
                 System.exit(0);
             }
